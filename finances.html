@@ -308,12 +308,13 @@ canvas{width:100%;display:block}
         <ol>
           <li>Ανοίξτε ένα <strong>Google Sheet</strong> στο Google Drive σας</li>
           <li>Πατήστε <strong>Extensions → Apps Script</strong></li>
-          <li>Διαγράψτε τον υπάρχοντα κώδικα και επικολλήστε τον κώδικα από το αρχείο <code>finances_sheets.gs</code></li>
+          <li>Διαγράψτε τον υπάρχοντα κώδικα και επικολλήστε τον νέο κώδικα <code>Code.gs</code> (δείτε παρακάτω)</li>
           <li>Πατήστε 💾 <strong>Save</strong>, μετά <strong>Deploy → New Deployment</strong></li>
           <li>Επιλέξτε Type: <strong>Web App</strong></li>
           <li>Execute as: <strong>Me</strong> · Who has access: <strong>Anyone</strong></li>
           <li>Πατήστε <strong>Deploy</strong>, αντιγράψτε το Web App URL</li>
           <li>Επικολλήστε το URL παραπάνω και πατήστε <strong>Αποθήκευση</strong></li>
+          <li>⚠️ Αν είχατε παλιό deployment, κάντε <strong>New Deployment</strong> (όχι edit) για να ενημερωθεί το URL</li>
         </ol>
       </details>
 
@@ -567,37 +568,40 @@ function loadSyncTime() {
   if (s) document.getElementById('syncTime').textContent = '🕐 Τελευταίος συγχρονισμός: '+s;
 }
 
-// ── JSONP helper (bypasses CORS for file:// origins) ─────────────────────────
-// Injects a <script> tag so the browser never makes an XHR/fetch cross-origin
-// request. The Apps Script wraps its response in callback(...) when it sees
-// the ?callback= parameter.
-function jsonp(url, params) {
-  return new Promise(function(resolve, reject) {
-    const cbName = '_fin_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-    const script = document.createElement('script');
-    const timer  = setTimeout(function() {
-      cleanup(); reject(new Error('Timeout — Apps Script took too long to respond'));
-    }, 25000);
-
-    function cleanup() {
-      try { delete window[cbName]; } catch(e) {}
-      if (script.parentNode) script.parentNode.removeChild(script);
-      clearTimeout(timer);
+// ── Fetch helper ──────────────────────────────────────────────────────────────
+// POST uses Content-Type: text/plain to avoid a CORS preflight OPTIONS request,
+// which Google Apps Script Web Apps do not handle. The script reads the body
+// via e.postData.contents and parses it as JSON.
+async function callScript(url, data, method) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 25000);
+  try {
+    let res;
+    if (method === 'POST') {
+      res = await fetch(url, {
+        method:   'POST',
+        headers:  { 'Content-Type': 'text/plain;charset=utf-8' },
+        body:     JSON.stringify(data),
+        redirect: 'follow',
+        signal:   controller.signal
+      });
+    } else {
+      const qs = new URLSearchParams(data).toString();
+      res = await fetch(url + (qs ? '?' + qs : ''), { signal: controller.signal });
     }
-
-    window[cbName] = function(data) { cleanup(); resolve(data); };
-    script.onerror  = function()    { cleanup(); reject(new Error('Script load failed — check the URL')); };
-
-    params.callback = cbName;
-    const qs = Object.keys(params)
-      .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
-      .join('&');
-    script.src = url + '?' + qs;
-    document.head.appendChild(script);
-  });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + res.statusText);
+    const text = await res.text();
+    try { return JSON.parse(text); }
+    catch (_) { throw new Error('Invalid response from Apps Script — check the URL'); }
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error('Timeout — Apps Script took too long to respond');
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-// ── Export to Google Sheets (chunked JSONP GET) ───────────────────────────────
+// ── Export to Google Sheets ───────────────────────────────────────────────────
 async function exportToSheets() {
   const url = getScriptUrl();
   if (!url) {
@@ -606,29 +610,11 @@ async function exportToSheets() {
     return;
   }
   setSyncBusy(true);
-
-  // Split into chunks of 40 to stay well within URL length limits
-  const CHUNK_SIZE = 40;
-  const chunks     = [];
-  for (let i = 0; i < txns.length; i += CHUNK_SIZE) {
-    chunks.push(txns.slice(i, i + CHUNK_SIZE));
-  }
-  const total = chunks.length || 1; // at least 1 call to clear the sheet
+  setSyncStatus('loading', '⏳ Αποστολή δεδομένων στο Google Sheets…');
 
   try {
-    for (let c = 0; c < total; c++) {
-      setSyncStatus('loading',
-        '⏳ Αποστολή ' + (c + 1) + ' / ' + total + ' τμημάτων…');
-
-      const result = await jsonp(url, {
-        action: 'export',
-        chunk:  c,
-        total:  total,
-        data:   JSON.stringify(chunks[c] || [])
-      });
-
-      if (!result.success) throw new Error(result.error || 'Server error');
-    }
+    const result = await callScript(url, { action: 'export', transactions: txns }, 'POST');
+    if (!result.success) throw new Error(result.error || 'Server error');
 
     saveSyncTime();
     setSyncStatus('ok', '✅ Εξαγωγή ολοκληρώθηκε — ' + txns.length + ' συναλλαγές αποθηκεύτηκαν');
@@ -640,7 +626,7 @@ async function exportToSheets() {
   }
 }
 
-// ── Import from Google Sheets (JSONP GET) ─────────────────────────────────────
+// ── Import from Google Sheets ─────────────────────────────────────────────────
 async function importFromSheets() {
   const url = getScriptUrl();
   if (!url) {
@@ -652,8 +638,7 @@ async function importFromSheets() {
   setSyncStatus('loading', '⏳ Λήψη δεδομένων από το Google Sheets…');
 
   try {
-    const data = await jsonp(url, { action: 'import' });
-
+    const data = await callScript(url, { action: 'import' }, 'GET');
     if (!data.success) throw new Error(data.error || 'Server error');
 
     const n = data.transactions.length;

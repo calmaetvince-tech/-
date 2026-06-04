@@ -511,6 +511,28 @@ const NOW          = new Date();
 const CURRENT_KEY  = ym(NOW.getFullYear(), NOW.getMonth());
 let   viewKey      = CURRENT_KEY;        // selected month YYYY-MM
 
+// ── One-time rollover ─────────────────────────────────────────────────────────
+// The numbers entered before this upgrade represent the previous month's tracking.
+// Move every pre-existing transaction into last calendar month so the CURRENT month
+// starts fresh at 0. Runs exactly once (guarded by a flag), then never again — any
+// transaction added afterwards keeps its real date.
+let rolloverJustRan = false;
+(function rolloverExisting(){
+  if (localStorage.getItem('fin_rollover_v3') === '1') return;
+  if (txns.length){
+    const py = NOW.getMonth()===0 ? NOW.getFullYear()-1 : NOW.getFullYear();
+    const pm = NOW.getMonth()===0 ? 11 : NOW.getMonth()-1;   // previous month, 0-based
+    const dim = new Date(py, pm+1, 0).getDate();             // days in previous month
+    txns.forEach(t=>{
+      const day = Math.min(parseInt(String(t.date).slice(8,10)) || 1, dim);
+      t.date = py+'-'+pad(pm+1)+'-'+pad(day);
+    });
+    localStorage.setItem('fin_v2', JSON.stringify(txns));
+    rolloverJustRan = true;
+  }
+  localStorage.setItem('fin_rollover_v3','1');
+})();
+
 const MONTHS_GR = ['Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος',
                    'Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
 const MONTHS_GR_SHORT = ['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιουν','Ιουλ','Αυγ','Σεπ','Οκτ','Νοε','Δεκ'];
@@ -539,6 +561,9 @@ document.getElementById('autoSyncToggle').checked = autoSync;
 loadSyncTime();
 render();
 window.addEventListener('resize', drawChart);
+if (rolloverJustRan){
+  setTimeout(()=>toast('✅ Τα δεδομένα μεταφέρθηκαν στον προηγούμενο μήνα · ο τρέχων μήνας ξεκινά από 0'), 600);
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function today() { const d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }

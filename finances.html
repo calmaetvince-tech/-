@@ -3,238 +3,377 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4f46e5">
 <title>Οικονομικά Μου</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  --green:#10b981;--green-bg:#d1fae5;
-  --red:#ef4444;--red-bg:#fee2e2;
+  --green:#10b981;--green-bg:#d1fae5;--green-d:#047857;
+  --red:#ef4444;--red-bg:#fee2e2;--red-d:#b91c1c;
   --blue:#4f46e5;--blue2:#7c3aed;
-  --bg:#f1f5f9;--card:#fff;
-  --text:#0f172a;--muted:#64748b;
+  --bg:#eef2f7;--card:#ffffff;--card2:#f8fafc;
+  --text:#0f172a;--muted:#64748b;--faint:#94a3b8;
   --border:#e2e8f0;
-  --r:14px;
-  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --r:16px;--r-sm:10px;
+  --sh:0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);
+  --sh-lg:0 10px 30px -10px rgba(15,23,42,.18);
+}
+html[data-theme="dark"]{
+  --green:#34d399;--green-bg:#064e3b;--green-d:#6ee7b7;
+  --red:#f87171;--red-bg:#4c1d24;--red-d:#fca5a5;
+  --blue:#818cf8;--blue2:#a78bfa;
+  --bg:#0b1120;--card:#111a2e;--card2:#0f1729;
+  --text:#e8eef7;--muted:#94a3b8;--faint:#64748b;
+  --border:#243049;
+  --sh:0 1px 3px rgba(0,0,0,.4);
+  --sh-lg:0 14px 34px -12px rgba(0,0,0,.6);
 }
 
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-  background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:48px}
+  background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:54px;
+  transition:background .3s,color .3s;-webkit-tap-highlight-color:transparent}
 
 /* ── Header ── */
 header{background:linear-gradient(135deg,#4f46e5,#7c3aed);
-  color:#fff;padding:28px 20px 24px;text-align:center}
-header h1{font-size:1.55rem;font-weight:800;letter-spacing:-.5px}
-header p{opacity:.75;font-size:.88rem;margin-top:5px}
+  color:#fff;padding:26px 20px 22px;text-align:center;position:relative;overflow:hidden}
+header::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(900px 200px at 80% -40%,rgba(255,255,255,.22),transparent)}
+header h1{font-size:1.55rem;font-weight:800;letter-spacing:-.5px;position:relative}
+header p{opacity:.8;font-size:.88rem;margin-top:5px;position:relative}
+.theme-btn{position:absolute;top:16px;right:16px;z-index:2;
+  width:38px;height:38px;border:none;border-radius:50%;cursor:pointer;
+  background:rgba(255,255,255,.16);color:#fff;font-size:1.05rem;
+  backdrop-filter:blur(6px);transition:background .2s,transform .15s}
+.theme-btn:hover{background:rgba(255,255,255,.28)}
+.theme-btn:active{transform:scale(.9)}
+.savechip{position:absolute;top:18px;left:16px;z-index:2;display:flex;align-items:center;
+  gap:6px;font-size:.72rem;font-weight:700;background:rgba(255,255,255,.16);
+  padding:6px 11px;border-radius:30px;backdrop-filter:blur(6px);opacity:.55;transition:opacity .3s,transform .3s}
+.savechip.flash{opacity:1;transform:scale(1.06);background:rgba(16,185,129,.5)}
+.savechip .dot{width:7px;height:7px;border-radius:50%;background:#a7f3d0;box-shadow:0 0 0 0 rgba(167,243,208,.7)}
+.savechip.flash .dot{animation:pulse 1s ease}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(167,243,208,.7)}100%{box-shadow:0 0 0 9px rgba(167,243,208,0)}}
 
 /* ── Container ── */
-.wrap{max-width:940px;margin:0 auto;padding:24px 16px}
+.wrap{max-width:960px;margin:0 auto;padding:20px 16px}
+
+/* ── Month navigator ── */
+.monthnav{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--card);border-radius:var(--r);padding:10px 12px;box-shadow:var(--sh);margin-bottom:16px}
+.mn-arrow{width:42px;height:42px;border:none;border-radius:12px;cursor:pointer;
+  background:var(--card2);color:var(--text);font-size:1.1rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;transition:background .15s,transform .1s}
+.mn-arrow:hover{background:var(--border)}
+.mn-arrow:active{transform:scale(.92)}
+.mn-arrow:disabled{opacity:.3;cursor:not-allowed}
+.mn-center{text-align:center;flex:1;cursor:pointer;border-radius:10px;padding:4px;transition:background .15s}
+.mn-center:hover{background:var(--card2)}
+.mn-month{font-size:1.12rem;font-weight:800;letter-spacing:-.3px}
+.mn-sub{font-size:.72rem;color:var(--muted);font-weight:600;margin-top:2px}
+.mn-today{display:inline-block;font-size:.7rem;font-weight:800;color:#fff;
+  background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:2px 9px;border-radius:20px;margin-top:4px}
 
 /* ── Dashboard ── */
-.dash{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
-.kpi{background:var(--card);border-radius:var(--r);padding:20px 18px;
-  box-shadow:var(--sh);position:relative;overflow:hidden}
-.kpi::after{content:'';position:absolute;right:-12px;top:-12px;
-  width:72px;height:72px;border-radius:50%;opacity:.06}
+.dash{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.kpi{background:var(--card);border-radius:var(--r);padding:18px 18px;
+  box-shadow:var(--sh);position:relative;overflow:hidden;transition:transform .15s,box-shadow .2s}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--sh-lg)}
+.kpi::after{content:'';position:absolute;right:-14px;top:-14px;
+  width:78px;height:78px;border-radius:50%;opacity:.09}
 .kpi.inc::after{background:var(--green)}
 .kpi.exp::after{background:var(--red)}
 .kpi.bal::after{background:var(--blue)}
-.kpi-lbl{font-size:.72rem;font-weight:700;text-transform:uppercase;
-  letter-spacing:.6px;color:var(--muted);margin-bottom:8px}
-.kpi-ico{font-size:1.3rem;margin-bottom:6px}
-.kpi-val{font-size:1.55rem;font-weight:800;letter-spacing:-.5px}
-.kpi.inc .kpi-val{color:var(--green)}
-.kpi.exp .kpi-val{color:var(--red)}
-.pos{color:var(--green)}
-.neg{color:var(--red)}
+.kpi-top{display:flex;align-items:center;gap:7px;margin-bottom:9px}
+.kpi-ico{font-size:1.15rem}
+.kpi-lbl{font-size:.7rem;font-weight:800;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--muted)}
+.kpi-val{font-size:1.5rem;font-weight:800;letter-spacing:-.6px}
+.kpi.inc .kpi-val{color:var(--green-d)}
+.kpi.exp .kpi-val{color:var(--red-d)}
+html[data-theme="dark"] .kpi.inc .kpi-val{color:var(--green)}
+html[data-theme="dark"] .kpi.exp .kpi-val{color:var(--red)}
+.pos{color:var(--green-d)}
+.neg{color:var(--red-d)}
+html[data-theme="dark"] .pos{color:var(--green)}
+html[data-theme="dark"] .neg{color:var(--red)}
+.kpi-delta{font-size:.72rem;font-weight:700;margin-top:6px;display:flex;align-items:center;gap:4px;color:var(--muted)}
+.delta-up{color:var(--green-d)}.delta-down{color:var(--red-d)}
+html[data-theme="dark"] .delta-up{color:var(--green)}html[data-theme="dark"] .delta-down{color:var(--red)}
+
+/* savings bar */
+.saverow{background:var(--card);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh);margin-bottom:20px}
+.saverow-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.saverow-lbl{font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.saverow-pct{font-size:1.05rem;font-weight:800}
+.savebar{height:11px;background:var(--card2);border-radius:30px;overflow:hidden;position:relative}
+.savebar-fill{height:100%;border-radius:30px;background:linear-gradient(90deg,#10b981,#34d399);
+  width:0;transition:width .7s cubic-bezier(.22,1,.36,1)}
+.savebar-fill.warn{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.savebar-fill.bad{background:linear-gradient(90deg,#ef4444,#f87171)}
+.saverow-note{font-size:.74rem;color:var(--muted);margin-top:8px}
 
 /* ── Grids ── */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
 
 /* ── Card ── */
-.card{background:var(--card);border-radius:var(--r);padding:22px;box-shadow:var(--sh)}
-.card h2{font-size:.95rem;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:7px}
+.card{background:var(--card);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+.card h2{font-size:.95rem;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:7px}
+.card.mb{margin-bottom:20px}
 
 /* ── Type toggle ── */
-.toggle{display:flex;background:var(--bg);border-radius:9px;padding:3px;margin-bottom:16px}
-.tbtn{flex:1;padding:9px 8px;border:none;background:transparent;
-  border-radius:7px;font-size:.84rem;font-weight:600;cursor:pointer;
-  color:var(--muted);transition:all .18s}
-.tbtn.on-inc{background:var(--green);color:#fff;box-shadow:var(--sh)}
-.tbtn.on-exp{background:var(--red);color:#fff;box-shadow:var(--sh)}
+.toggle{display:flex;background:var(--card2);border-radius:11px;padding:4px;margin-bottom:15px}
+.tbtn{flex:1;padding:10px 8px;border:none;background:transparent;
+  border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;
+  color:var(--muted);transition:all .2s}
+.tbtn.on-inc{background:var(--green);color:#fff;box-shadow:0 3px 10px -3px var(--green)}
+.tbtn.on-exp{background:var(--red);color:#fff;box-shadow:0 3px 10px -3px var(--red)}
 
 /* ── Form ── */
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .fg{margin-bottom:13px}
 .fg label{display:block;font-size:.72rem;font-weight:700;
-  text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:5px}
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:5px}
 .fg input,.fg select,.fg textarea{
-  width:100%;padding:9px 11px;border:1.5px solid var(--border);
-  border-radius:8px;font-size:.88rem;font-family:inherit;color:var(--text);
-  background:#fff;outline:none;transition:border-color .18s}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue)}
-.fg textarea{resize:none;height:58px}
-.addbtn{width:100%;padding:11px;margin-top:2px;
+  width:100%;padding:10px 12px;border:1.5px solid var(--border);
+  border-radius:10px;font-size:.9rem;font-family:inherit;color:var(--text);
+  background:var(--card);outline:none;transition:border-color .18s,box-shadow .18s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,70,229,.13)}
+.fg textarea{resize:none;height:56px}
+.addbtn{width:100%;padding:12px;margin-top:2px;
   background:linear-gradient(135deg,#4f46e5,#7c3aed);
-  color:#fff;border:none;border-radius:9px;font-size:.92rem;
-  font-weight:700;cursor:pointer;transition:opacity .18s,transform .1s}
-.addbtn:hover{opacity:.9}
-.addbtn:active{transform:scale(.99)}
+  color:#fff;border:none;border-radius:11px;font-size:.95rem;
+  font-weight:800;cursor:pointer;transition:opacity .18s,transform .1s,box-shadow .2s;
+  box-shadow:0 6px 16px -6px rgba(79,70,229,.6)}
+.addbtn:hover{opacity:.95;box-shadow:0 8px 20px -6px rgba(79,70,229,.7)}
+.addbtn:active{transform:scale(.98)}
+
+/* ── Insights ── */
+.insights{display:flex;flex-direction:column;gap:11px}
+.ins{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;background:var(--card2)}
+.ins-ico{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;
+  justify-content:center;font-size:1.1rem;flex-shrink:0;background:var(--card)}
+.ins-txt{flex:1;min-width:0}
+.ins-lbl{font-size:.72rem;color:var(--muted);font-weight:600}
+.ins-val{font-size:.92rem;font-weight:800;margin-top:1px}
+.ins-val small{font-weight:600;color:var(--muted);font-size:.78rem}
+
+/* ── Category breakdown ── */
+.catbar{margin-bottom:11px}
+.catbar:last-child{margin-bottom:0}
+.catbar-top{display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px}
+.catbar-name{font-weight:700;display:flex;align-items:center;gap:6px}
+.catbar-amt{font-weight:800;color:var(--muted)}
+.catbar-track{height:9px;background:var(--card2);border-radius:30px;overflow:hidden}
+.catbar-fill{height:100%;border-radius:30px;width:0;transition:width .6s cubic-bezier(.22,1,.36,1)}
 
 /* ── Chart ── */
 canvas{width:100%;display:block}
-.legend{display:flex;gap:14px;margin-bottom:10px;font-size:.78rem;font-weight:600;color:var(--muted)}
+.legend{display:flex;gap:14px;margin-bottom:10px;font-size:.78rem;font-weight:700;color:var(--muted)}
 .ldot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px}
 
+/* ── Monthly history ── */
+.hist-item{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background .15s;border-radius:10px}
+.hist-item:last-child{border-bottom:none}
+.hist-item:hover{background:var(--card2)}
+.hist-item.active{background:linear-gradient(90deg,rgba(79,70,229,.1),transparent)}
+.hist-mo{width:54px;height:54px;border-radius:13px;flex-shrink:0;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;line-height:1.1}
+.hist-mo .m{font-size:.78rem;font-weight:800;text-transform:uppercase}
+.hist-mo .y{font-size:.62rem;opacity:.8}
+.hist-info{flex:1;min-width:0}
+.hist-net{font-size:1rem;font-weight:800}
+.hist-sub{font-size:.74rem;color:var(--muted);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap}
+.hist-sub .i{color:var(--green-d)}.hist-sub .e{color:var(--red-d)}
+html[data-theme="dark"] .hist-sub .i{color:var(--green)}html[data-theme="dark"] .hist-sub .e{color:var(--red)}
+.hist-chev{color:var(--faint);font-size:.9rem;flex-shrink:0}
+
 /* ── Sync card ── */
-.sync-card{margin-bottom:22px}
+.sync-card{margin-bottom:20px}
 .sync-toggle{display:flex;align-items:center;justify-content:space-between;
-  cursor:pointer;user-select:none;margin-bottom:0}
+  cursor:pointer;user-select:none}
 .sync-toggle h2{margin-bottom:0}
 .sync-chevron{font-size:.8rem;color:var(--muted);transition:transform .2s}
 .sync-chevron.open{transform:rotate(180deg)}
-.sync-body{margin-top:18px}
+.sync-body{margin-top:16px}
+
+/* auto-sync switch row */
+.autosync{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 14px;background:var(--card2);border-radius:12px;margin-bottom:14px}
+.autosync-txt .t{font-size:.86rem;font-weight:800}
+.autosync-txt .s{font-size:.74rem;color:var(--muted);margin-top:2px}
+.switch{position:relative;width:48px;height:28px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:var(--border);
+  border-radius:30px;transition:.25s}
+.slider::before{content:'';position:absolute;height:22px;width:22px;left:3px;top:3px;
+  background:#fff;border-radius:50%;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.switch input:checked+.slider{background:var(--green)}
+.switch input:checked+.slider::before{transform:translateX(20px)}
 
 .sync-url-row{display:flex;gap:8px;margin-bottom:14px}
-.sync-url-row input{flex:1;padding:9px 11px;border:1.5px solid var(--border);
-  border-radius:8px;font-size:.85rem;font-family:inherit;color:var(--text);
-  background:#fff;outline:none;transition:border-color .18s;min-width:0}
+.sync-url-row input{flex:1;padding:10px 12px;border:1.5px solid var(--border);
+  border-radius:10px;font-size:.85rem;font-family:inherit;color:var(--text);
+  background:var(--card);outline:none;transition:border-color .18s;min-width:0}
 .sync-url-row input:focus{border-color:var(--blue)}
-.sync-save-btn{padding:9px 14px;background:var(--blue);color:#fff;border:none;
-  border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;
+.sync-save-btn{padding:10px 14px;background:var(--blue);color:#fff;border:none;
+  border-radius:10px;font-size:.82rem;font-weight:800;cursor:pointer;
   white-space:nowrap;transition:opacity .18s}
 .sync-save-btn:hover{opacity:.88}
 
 .sync-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.sbtn{padding:10px;border:none;border-radius:9px;font-size:.85rem;font-weight:700;
+.sbtn{padding:11px;border:none;border-radius:11px;font-size:.85rem;font-weight:800;
   cursor:pointer;transition:opacity .18s,transform .1s;display:flex;
   align-items:center;justify-content:center;gap:6px}
 .sbtn:hover{opacity:.88}
 .sbtn:active{transform:scale(.98)}
 .sbtn:disabled{opacity:.5;cursor:not-allowed}
-.sbtn-exp{background:var(--green-bg);color:#065f46}
+.sbtn-exp{background:var(--green-bg);color:var(--green-d)}
 .sbtn-imp{background:#ede9fe;color:#4c1d95}
+html[data-theme="dark"] .sbtn-exp{color:var(--green-d)}
+html[data-theme="dark"] .sbtn-imp{background:#312e5b;color:#c4b5fd}
 
-.sync-status{padding:9px 12px;border-radius:8px;font-size:.82rem;font-weight:600;
+.sync-status{padding:10px 12px;border-radius:10px;font-size:.82rem;font-weight:700;
   margin-top:10px;display:none}
 .sync-status.show{display:block}
-.sync-status.ok {background:#d1fae5;color:#065f46}
-.sync-status.err{background:#fee2e2;color:#991b1b}
+.sync-status.ok {background:var(--green-bg);color:var(--green-d)}
+.sync-status.err{background:var(--red-bg);color:var(--red-d)}
 .sync-status.loading{background:#fef9c3;color:#713f12}
+html[data-theme="dark"] .sync-status.loading{background:#3a3410;color:#fde68a}
 
 .sync-time{font-size:.75rem;color:var(--muted);margin-top:8px;min-height:16px}
 
-.sync-help{margin-top:14px;border:1.5px solid var(--border);
-  border-radius:10px;overflow:hidden}
-.sync-help summary{padding:10px 14px;font-size:.82rem;font-weight:700;
-  cursor:pointer;color:var(--muted);list-style:none;display:flex;
-  align-items:center;gap:6px}
+.sync-help{margin-top:14px;border:1.5px solid var(--border);border-radius:12px;overflow:hidden}
+.sync-help summary{padding:11px 14px;font-size:.82rem;font-weight:800;
+  cursor:pointer;color:var(--muted);list-style:none;display:flex;align-items:center;gap:6px}
 .sync-help summary::-webkit-details-marker{display:none}
 .sync-help summary::before{content:'📖';font-size:.9rem}
-.sync-help[open] summary{border-bottom:1.5px solid var(--border);
-  background:var(--bg);color:var(--text)}
-.sync-help ol{padding:14px 18px;font-size:.82rem;line-height:1.9;
-  color:var(--muted);counter-reset:steps}
+.sync-help[open] summary{border-bottom:1.5px solid var(--border);background:var(--card2);color:var(--text)}
+.sync-help ol{padding:14px 18px;font-size:.82rem;line-height:1.9;color:var(--muted)}
 .sync-help li{margin-left:16px}
-.sync-help code{background:var(--bg);padding:1px 5px;border-radius:4px;
-  font-size:.8rem;color:var(--blue)}
+.sync-help code{background:var(--card2);padding:1px 5px;border-radius:4px;font-size:.8rem;color:var(--blue)}
 .sync-help strong{color:var(--text)}
 
 /* ── Transactions ── */
 .txn-header{display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:10px;margin-bottom:16px}
-.txn-header h2{font-size:.95rem;font-weight:700;display:flex;align-items:center;gap:7px}
-.filter-row{display:flex;align-items:center;gap:8px}
-.filter-row input[type=month]{padding:7px 10px;border:1.5px solid var(--border);
-  border-radius:8px;font-size:.82rem;font-family:inherit;color:var(--text);
-  background:#fff;outline:none;cursor:pointer}
-.filter-row input[type=month]:focus{border-color:var(--blue)}
-.clrbtn{padding:7px 11px;border:1.5px solid var(--border);border-radius:8px;
-  background:#fff;font-size:.8rem;color:var(--muted);cursor:pointer;
-  transition:background .15s;font-family:inherit}
-.clrbtn:hover{background:var(--bg)}
+  flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.txn-header h2{font-size:.95rem;font-weight:800;display:flex;align-items:center;gap:7px}
+.seg{display:flex;background:var(--card2);border-radius:9px;padding:3px}
+.seg button{border:none;background:transparent;padding:6px 13px;border-radius:7px;
+  font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;transition:.15s}
+.seg button.on{background:var(--card);color:var(--text);box-shadow:var(--sh)}
 
-/* ── Transaction item ── */
 .ti{display:flex;align-items:center;gap:11px;padding:11px 0;
-  border-bottom:1px solid var(--border);animation:fadeIn .2s ease}
+  border-bottom:1px solid var(--border);animation:fadeIn .25s ease}
 .ti:last-child{border-bottom:none}
-@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-.ti-ico{width:40px;height:40px;border-radius:11px;display:flex;
+@keyframes fadeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.ti-ico{width:42px;height:42px;border-radius:12px;display:flex;
   align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
 .ti-ico.income{background:var(--green-bg)}
 .ti-ico.expense{background:var(--red-bg)}
 .ti-info{flex:1;min-width:0}
-.ti-cat{font-size:.88rem;font-weight:700;color:var(--text)}
-.ti-desc{font-size:.75rem;color:var(--muted);white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.ti-cat{font-size:.9rem;font-weight:700;color:var(--text)}
+.ti-desc{font-size:.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
 .ti-right{text-align:right;flex-shrink:0}
-.ti-amt{font-size:.92rem;font-weight:800}
-.ti-amt.income{color:var(--green)}
-.ti-amt.expense{color:var(--red)}
+.ti-amt{font-size:.94rem;font-weight:800}
+.ti-amt.income{color:var(--green-d)}
+.ti-amt.expense{color:var(--red-d)}
+html[data-theme="dark"] .ti-amt.income{color:var(--green)}
+html[data-theme="dark"] .ti-amt.expense{color:var(--red)}
 .ti-date{font-size:.72rem;color:var(--muted);margin-top:2px}
 .delbtn{width:30px;height:30px;border:none;background:transparent;
-  color:#cbd5e1;cursor:pointer;border-radius:7px;display:flex;
-  align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;
-  transition:all .15s;line-height:1}
+  color:var(--faint);cursor:pointer;border-radius:8px;display:flex;
+  align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;transition:all .15s;line-height:1}
 .delbtn:hover{background:var(--red-bg);color:var(--red)}
 
 /* ── Misc ── */
-.badge{background:var(--bg);color:var(--muted);font-size:.72rem;
-  font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px}
-.empty{text-align:center;padding:44px 20px;color:var(--muted)}
+.badge{background:var(--card2);color:var(--muted);font-size:.72rem;
+  font-weight:800;padding:2px 9px;border-radius:20px;margin-left:6px}
+.empty{text-align:center;padding:42px 20px;color:var(--muted)}
 .empty .e-ico{font-size:2.8rem;margin-bottom:12px}
-.empty p{font-size:.9rem}
-.empty small{font-size:.8rem;margin-top:6px;display:block;opacity:.7}
+.empty p{font-size:.92rem;font-weight:700}
+.empty small{font-size:.8rem;margin-top:6px;display:block;opacity:.75}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
-  background:#0f172a;color:#fff;padding:10px 20px;border-radius:50px;
-  font-size:.85rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;
-  pointer-events:none;white-space:nowrap}
+  background:#0f172a;color:#fff;padding:12px 22px;border-radius:50px;
+  font-size:.86rem;font-weight:700;opacity:0;transition:all .3s;z-index:999;
+  pointer-events:none;white-space:nowrap;box-shadow:0 10px 30px -8px rgba(0,0,0,.5)}
+html[data-theme="dark"] .toast{background:#1e293b;border:1px solid var(--border)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* confetti */
+.confetti{position:fixed;top:-12px;z-index:998;font-size:1rem;pointer-events:none;will-change:transform,opacity}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:0}}
+
 /* ── Mobile ── */
-@media(max-width:620px){
+@media(max-width:640px){
   .dash{grid-template-columns:1fr 1fr}
   .kpi.bal{grid-column:1/-1}
   .grid2{grid-template-columns:1fr}
-  .frow{grid-template-columns:1fr}
-  .kpi-val{font-size:1.25rem}
+  .frow{grid-template-columns:1fr 1fr}
+  .kpi-val{font-size:1.3rem}
   .sync-btns{grid-template-columns:1fr}
+  .mn-month{font-size:1.02rem}
 }
-@media(max-width:380px){
+@media(max-width:400px){
   .dash{grid-template-columns:1fr}
   .kpi.bal{grid-column:auto}
+  .frow{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 
 <header>
+  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Εναλλαγή θέματος">🌙</button>
+  <div class="savechip" id="saveChip"><span class="dot"></span><span id="saveChipTxt">Αυτόματη αποθήκευση</span></div>
   <h1>💰 Οικονομικά Μου</h1>
-  <p>Παρακολούθηση εσόδων &amp; εξόδων</p>
+  <p>Παρακολούθηση εσόδων &amp; εξόδων ανά μήνα</p>
 </header>
 
 <div class="wrap">
 
+  <!-- Month navigator -->
+  <div class="monthnav">
+    <button class="mn-arrow" id="mnPrev" onclick="shiftMonth(-1)" title="Προηγούμενος μήνας">‹</button>
+    <div class="mn-center" onclick="gotoCurrentMonth()" title="Μετάβαση στον τρέχοντα μήνα">
+      <div class="mn-month" id="mnMonth">—</div>
+      <div class="mn-sub" id="mnSub"></div>
+    </div>
+    <button class="mn-arrow" id="mnNext" onclick="shiftMonth(1)" title="Επόμενος μήνας">›</button>
+  </div>
+
   <!-- Dashboard -->
   <div class="dash">
     <div class="kpi inc">
-      <div class="kpi-ico">📈</div>
-      <div class="kpi-lbl">Σύνολο Εσόδων</div>
+      <div class="kpi-top"><span class="kpi-ico">📈</span><span class="kpi-lbl">Έσοδα μήνα</span></div>
       <div class="kpi-val" id="kIncome">€0,00</div>
+      <div class="kpi-delta" id="dIncome"></div>
     </div>
     <div class="kpi exp">
-      <div class="kpi-ico">📉</div>
-      <div class="kpi-lbl">Σύνολο Εξόδων</div>
+      <div class="kpi-top"><span class="kpi-ico">📉</span><span class="kpi-lbl">Έξοδα μήνα</span></div>
       <div class="kpi-val" id="kExpense">€0,00</div>
+      <div class="kpi-delta" id="dExpense"></div>
     </div>
     <div class="kpi bal">
-      <div class="kpi-ico">⚖️</div>
-      <div class="kpi-lbl">Υπόλοιπο</div>
+      <div class="kpi-top"><span class="kpi-ico">⚖️</span><span class="kpi-lbl">Υπόλοιπο μήνα</span></div>
       <div class="kpi-val" id="kBalance">€0,00</div>
+      <div class="kpi-delta" id="dBalance"></div>
     </div>
   </div>
 
-  <!-- Form + Chart -->
+  <!-- Savings rate -->
+  <div class="saverow">
+    <div class="saverow-top">
+      <span class="saverow-lbl">💎 Ποσοστό αποταμίευσης</span>
+      <span class="saverow-pct" id="savePct">—</span>
+    </div>
+    <div class="savebar"><div class="savebar-fill" id="saveFill"></div></div>
+    <div class="saverow-note" id="saveNote"></div>
+  </div>
+
+  <!-- Form + Insights -->
   <div class="grid2">
 
     <div class="card">
@@ -246,7 +385,7 @@ canvas{width:100%;display:block}
       <div class="frow">
         <div class="fg">
           <label>Ποσό (€)</label>
-          <input type="number" id="fAmount" placeholder="0.00" min="0.01" step="0.01">
+          <input type="number" id="fAmount" placeholder="0.00" min="0.01" step="0.01" inputmode="decimal">
         </div>
         <div class="fg">
           <label>Ημερομηνία</label>
@@ -265,15 +404,33 @@ canvas{width:100%;display:block}
     </div>
 
     <div class="card">
-      <h2>📊 Γράφημα</h2>
-      <div class="legend">
-        <span><span class="ldot" style="background:var(--green)"></span>Έσοδα</span>
-        <span><span class="ldot" style="background:var(--red)"></span>Έξοδα</span>
-      </div>
-      <canvas id="chart" height="210"></canvas>
-      <p id="chartNote" style="text-align:center;font-size:.75rem;color:var(--muted);margin-top:8px"></p>
+      <h2>🔎 Ανάλυση Μήνα</h2>
+      <div class="insights" id="insights"></div>
     </div>
 
+  </div>
+
+  <!-- Category breakdown -->
+  <div class="card mb" id="catCard">
+    <h2>🧮 Έξοδα ανά Κατηγορία</h2>
+    <div id="catList"></div>
+  </div>
+
+  <!-- Chart -->
+  <div class="card mb">
+    <h2>📊 Τάση 6 μηνών</h2>
+    <div class="legend">
+      <span><span class="ldot" style="background:var(--green)"></span>Έσοδα</span>
+      <span><span class="ldot" style="background:var(--red)"></span>Έξοδα</span>
+    </div>
+    <canvas id="chart" height="210"></canvas>
+    <p id="chartNote" style="text-align:center;font-size:.75rem;color:var(--muted);margin-top:8px"></p>
+  </div>
+
+  <!-- Monthly history -->
+  <div class="card mb">
+    <h2>🗓️ Ιστορικό Μηνών<span class="badge" id="histCount">0</span></h2>
+    <div id="histList"></div>
   </div>
 
   <!-- Google Sheets Sync -->
@@ -285,19 +442,25 @@ canvas{width:100%;display:block}
 
     <div class="sync-body" id="syncBody" style="display:none">
 
-      <div class="sync-url-row" style="margin-top:18px">
-        <input type="url" id="scriptUrl"
-          placeholder="https://script.google.com/macros/s/…/exec">
+      <div class="autosync">
+        <div class="autosync-txt">
+          <div class="t">⚡ Αυτόματη αποθήκευση στα Sheets</div>
+          <div class="s">Κάθε αλλαγή αποθηκεύεται αυτόματα — χωρίς κουμπιά</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="autoSyncToggle" onchange="toggleAutoSync()">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="sync-url-row">
+        <input type="url" id="scriptUrl" placeholder="https://script.google.com/macros/s/…/exec">
         <button class="sync-save-btn" onclick="saveUrl()">Αποθήκευση</button>
       </div>
 
       <div class="sync-btns">
-        <button class="sbtn sbtn-exp" id="btnExport" onclick="exportToSheets()">
-          ⬆️ Εξαγωγή στα Sheets
-        </button>
-        <button class="sbtn sbtn-imp" id="btnImport" onclick="importFromSheets()">
-          ⬇️ Εισαγωγή από Sheets
-        </button>
+        <button class="sbtn sbtn-exp" id="btnExport" onclick="exportToSheets()">⬆️ Εξαγωγή στα Sheets</button>
+        <button class="sbtn sbtn-imp" id="btnImport" onclick="importFromSheets()">⬇️ Εισαγωγή από Sheets</button>
       </div>
 
       <div id="syncStatus" class="sync-status"></div>
@@ -308,13 +471,13 @@ canvas{width:100%;display:block}
         <ol>
           <li>Ανοίξτε ένα <strong>Google Sheet</strong> στο Google Drive σας</li>
           <li>Πατήστε <strong>Extensions → Apps Script</strong></li>
-          <li>Διαγράψτε τον υπάρχοντα κώδικα και επικολλήστε τον νέο κώδικα <code>Code.gs</code> (δείτε παρακάτω)</li>
+          <li>Διαγράψτε τον υπάρχοντα κώδικα και επικολλήστε τον νέο κώδικα <code>Code.gs</code></li>
           <li>Πατήστε 💾 <strong>Save</strong>, μετά <strong>Deploy → New Deployment</strong></li>
           <li>Επιλέξτε Type: <strong>Web App</strong></li>
           <li>Execute as: <strong>Me</strong> · Who has access: <strong>Anyone</strong></li>
           <li>Πατήστε <strong>Deploy</strong>, αντιγράψτε το Web App URL</li>
           <li>Επικολλήστε το URL παραπάνω και πατήστε <strong>Αποθήκευση</strong></li>
-          <li>⚠️ Αν είχατε παλιό deployment, κάντε <strong>New Deployment</strong> (όχι edit) για να ενημερωθεί το URL</li>
+          <li>⚠️ Αν είχατε παλιό deployment, κάντε <strong>New Deployment</strong> (όχι edit)</li>
         </ol>
       </details>
 
@@ -325,9 +488,9 @@ canvas{width:100%;display:block}
   <div class="card">
     <div class="txn-header">
       <h2>📋 Συναλλαγές<span class="badge" id="txnCount">0</span></h2>
-      <div class="filter-row">
-        <input type="month" id="fMonth" onchange="applyFilter()" title="Φίλτρο μήνα">
-        <button class="clrbtn" onclick="clearFilter()">✕ Όλες</button>
+      <div class="seg">
+        <button id="segMonth" class="on" onclick="setScope('month')">Μήνας</button>
+        <button id="segAll" onclick="setScope('all')">Όλες</button>
       </div>
     </div>
     <div id="txnList"></div>
@@ -339,9 +502,18 @@ canvas{width:100%;display:block}
 
 <script>
 // ── State ─────────────────────────────────────────────────────────────────────
-let txns    = JSON.parse(localStorage.getItem('fin_v2') || '[]');
-let curType = 'income';
-let filterM = '';
+let txns     = JSON.parse(localStorage.getItem('fin_v2') || '[]');
+let curType  = 'income';
+let scope    = 'month';                 // 'month' | 'all' (transaction list scope)
+let autoSync = localStorage.getItem('fin_autoSync') === '1';
+
+const NOW          = new Date();
+const CURRENT_KEY  = ym(NOW.getFullYear(), NOW.getMonth());
+let   viewKey      = CURRENT_KEY;        // selected month YYYY-MM
+
+const MONTHS_GR = ['Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος',
+                   'Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
+const MONTHS_GR_SHORT = ['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιουν','Ιουλ','Αυγ','Σεπ','Οκτ','Νοε','Δεκ'];
 
 const CATS = {
   income:  ['Μισθός','Freelance','Άλλο'],
@@ -354,32 +526,67 @@ const ICONS = {
 };
 
 // ── Init ──────────────────────────────────────────────────────────────────────
+(function initTheme(){
+  const saved = localStorage.getItem('fin_theme');
+  const dark  = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (dark) { document.documentElement.setAttribute('data-theme','dark'); document.getElementById('themeBtn').textContent='☀️'; }
+})();
 document.getElementById('fDate').value = today();
 setType('income');
 const _savedUrl = localStorage.getItem('fin_scriptUrl');
 if (_savedUrl) document.getElementById('scriptUrl').value = _savedUrl;
+document.getElementById('autoSyncToggle').checked = autoSync;
 loadSyncTime();
 render();
 window.addEventListener('resize', drawChart);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function today() { return new Date().toISOString().slice(0,10); }
+function today() { const d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function pad(n){ return String(n).padStart(2,'0'); }
+function ym(y,m){ return y+'-'+pad(m+1); }                 // m is 0-based
+function ymShift(key,delta){ const [y,m]=key.split('-').map(Number); const d=new Date(y,m-1+delta,1); return ym(d.getFullYear(),d.getMonth()); }
+function keyToParts(key){ const [y,m]=key.split('-').map(Number); return {y, m:m-1}; }
 
-function fmt(n) {
-  return new Intl.NumberFormat('el-GR',{style:'currency',currency:'EUR'}).format(n);
+function fmt(n) { return new Intl.NumberFormat('el-GR',{style:'currency',currency:'EUR'}).format(n); }
+function fmtShort(n){ return Math.abs(n)>=1000 ? (n/1000).toFixed(n%1000===0?0:1)+'k€' : Math.round(n)+'€'; }
+function fmtDate(s) { return new Date(s+'T12:00:00').toLocaleDateString('el-GR',{day:'2-digit',month:'short',year:'numeric'}); }
+function monthLabel(key){ const {y,m}=keyToParts(key); return MONTHS_GR[m]+' '+y; }
+
+function save() {
+  localStorage.setItem('fin_v2', JSON.stringify(txns));
+  flashSaved();
+  if (autoSync) scheduleAutoSync();
 }
-function fmtDate(s) {
-  return new Date(s+'T12:00:00').toLocaleDateString('el-GR',
-    {day:'2-digit',month:'short',year:'numeric'});
+
+function flashSaved(){
+  const chip = document.getElementById('saveChip');
+  const txt  = document.getElementById('saveChipTxt');
+  txt.textContent = 'Αποθηκεύτηκε ✓';
+  chip.classList.add('flash');
+  clearTimeout(flashSaved._t);
+  flashSaved._t = setTimeout(()=>{ chip.classList.remove('flash'); txt.textContent='Αυτόματη αποθήκευση'; }, 1600);
 }
-function save() { localStorage.setItem('fin_v2', JSON.stringify(txns)); }
 
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2400);
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove('show'), 2400);
 }
+
+// ── Theme ─────────────────────────────────────────────────────────────────────
+function toggleTheme(){
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (dark){ document.documentElement.removeAttribute('data-theme'); localStorage.setItem('fin_theme','light'); document.getElementById('themeBtn').textContent='🌙'; }
+  else     { document.documentElement.setAttribute('data-theme','dark'); localStorage.setItem('fin_theme','dark'); document.getElementById('themeBtn').textContent='☀️'; }
+  drawChart();
+}
+
+// ── Month navigation ──────────────────────────────────────────────────────────
+function shiftMonth(delta){ viewKey = ymShift(viewKey, delta); scope='month'; syncSeg(); render(); }
+function gotoCurrentMonth(){ viewKey = CURRENT_KEY; render(); }
+function gotoMonth(key){ viewKey = key; scope='month'; syncSeg(); render(); window.scrollTo({top:0,behavior:'smooth'}); }
 
 // ── Type toggle ───────────────────────────────────────────────────────────────
 function setType(t) {
@@ -388,6 +595,13 @@ function setType(t) {
   document.getElementById('btnExp').className = 'tbtn'+(t==='expense'?' on-exp':'');
   const sel = document.getElementById('fCat');
   sel.innerHTML = CATS[t].map(c=>`<option value="${c}">${ICONS[c]||'📦'} ${c}</option>`).join('');
+}
+
+// ── Transaction scope ─────────────────────────────────────────────────────────
+function setScope(s){ scope=s; syncSeg(); render(); }
+function syncSeg(){
+  document.getElementById('segMonth').className = scope==='month'?'on':'';
+  document.getElementById('segAll').className   = scope==='all'?'on':'';
 }
 
 // ── Add transaction ───────────────────────────────────────────────────────────
@@ -402,10 +616,16 @@ function submitForm() {
 
   txns.unshift({ id:Date.now(), type:curType, amount, category:cat, date, description:desc });
   save();
+
+  // jump the view to the month of the new transaction so the user sees it land
+  viewKey = date.slice(0,7);
+
   document.getElementById('fAmount').value = '';
   document.getElementById('fDesc').value   = '';
   document.getElementById('fDate').value   = today();
-  toast(curType==='income' ? '✅ Έσοδο προστέθηκε!' : '✅ Έξοδο προστέθηκε!');
+
+  if (curType==='income') { toast('✅ Έσοδο προστέθηκε!'); confetti(); }
+  else                    { toast('✅ Έξοδο προστέθηκε!'); }
   render();
 }
 
@@ -418,90 +638,319 @@ function del(id) {
   render();
 }
 
-// ── Filter ────────────────────────────────────────────────────────────────────
-function applyFilter() { filterM = document.getElementById('fMonth').value; render(); }
-function clearFilter()  { filterM = ''; document.getElementById('fMonth').value = ''; render(); }
-function filtered()     { return filterM ? txns.filter(t=>t.date.startsWith(filterM)) : txns; }
+// ── Stats per month ───────────────────────────────────────────────────────────
+function statsFor(key){
+  const list = txns.filter(t => t.date.slice(0,7) === key);
+  let income=0, expense=0;
+  const byCat = {};
+  let biggest = null;
+  list.forEach(t=>{
+    if (t.type==='income') income += t.amount;
+    else {
+      expense += t.amount;
+      byCat[t.category] = (byCat[t.category]||0) + t.amount;
+    }
+    if (!biggest || t.amount > biggest.amount) biggest = t;
+  });
+  const net = income - expense;
+  const savingsRate = income>0 ? (net/income)*100 : (expense>0 ? -100 : 0);
+  return { key, list, income, expense, net, byCat, biggest, count:list.length, savingsRate };
+}
+
+function monthsWithData(){
+  const set = new Set(txns.map(t=>t.date.slice(0,7)));
+  return [...set].sort().reverse();   // newest first
+}
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function render() {
-  const list = filtered();
-  const inc  = list.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-  const exp  = list.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const bal  = inc - exp;
+  const s    = statsFor(viewKey);
+  const prev = statsFor(ymShift(viewKey,-1));
 
-  document.getElementById('kIncome').textContent  = fmt(inc);
-  document.getElementById('kExpense').textContent = fmt(exp);
+  // month navigator
+  document.getElementById('mnMonth').textContent = monthLabel(viewKey);
+  const sub = document.getElementById('mnSub');
+  if (viewKey === CURRENT_KEY) sub.innerHTML = '<span class="mn-today">Τρέχων μήνας</span>';
+  else { sub.textContent = s.count+' συναλλαγές'; }
+  document.getElementById('mnNext').disabled = viewKey >= CURRENT_KEY;
+
+  // KPIs (animated)
+  animateMoney(document.getElementById('kIncome'), s.income);
+  animateMoney(document.getElementById('kExpense'), s.expense);
   const bEl = document.getElementById('kBalance');
-  bEl.textContent = fmt(bal);
-  bEl.className   = 'kpi-val '+(bal>=0?'pos':'neg');
-  document.getElementById('txnCount').textContent = list.length;
+  animateMoney(bEl, s.net);
+  bEl.className = 'kpi-val '+(s.net>=0?'pos':'neg');
 
-  const el = document.getElementById('txnList');
-  if (list.length === 0) {
-    el.innerHTML = `<div class="empty"><div class="e-ico">💸</div>
-      <p>Δεν βρέθηκαν συναλλαγές</p>
-      <small>Προσθέστε την πρώτη σας συναλλαγή παραπάνω!</small></div>`;
-  } else {
-    el.innerHTML = list.map(t=>`
-      <div class="ti">
-        <div class="ti-ico ${t.type}">${ICONS[t.category]||'📦'}</div>
-        <div class="ti-info">
-          <div class="ti-cat">${t.category}</div>
-          <div class="ti-desc">${t.description||'—'}</div>
-        </div>
-        <div class="ti-right">
-          <div class="ti-amt ${t.type}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
-          <div class="ti-date">${fmtDate(t.date)}</div>
-        </div>
-        <button class="delbtn" onclick="del(${t.id})" title="Διαγραφή">✕</button>
-      </div>`).join('');
-  }
+  renderDelta('dIncome', s.income, prev.income, 'up-good');
+  renderDelta('dExpense', s.expense, prev.expense, 'down-good');
+  renderDelta('dBalance', s.net, prev.net, 'up-good');
+
+  // savings rate
+  renderSavings(s);
+
+  // insights
+  renderInsights(s, prev);
+
+  // category breakdown
+  renderCats(s);
+
+  // monthly history
+  renderHistory();
+
+  // transactions
+  renderTxns(s);
+
   drawChart();
 }
 
-// ── Chart ─────────────────────────────────────────────────────────────────────
+function renderDelta(id, cur, prev, mode){
+  const el = document.getElementById(id);
+  if (prev === 0 && cur === 0){ el.textContent=''; return; }
+  const diff = cur - prev;
+  if (Math.abs(diff) < 0.005){ el.innerHTML='<span style="color:var(--faint)">— ίδιο με προηγ. μήνα</span>'; return; }
+  const up = diff > 0;
+  // for income/balance up is good; for expense up is bad
+  let good;
+  if (mode==='down-good') good = !up; else good = up;
+  const arrow = up ? '▲' : '▼';
+  const cls   = good ? 'delta-up' : 'delta-down';
+  let pctTxt = '';
+  if (prev !== 0) pctTxt = ' '+Math.abs(Math.round(diff/Math.abs(prev)*100))+'%';
+  else pctTxt = ' '+fmtShort(Math.abs(diff));
+  el.innerHTML = `<span class="${cls}">${arrow}${pctTxt}</span><span style="color:var(--faint)"> vs προηγ.</span>`;
+}
+
+function renderSavings(s){
+  const pctEl = document.getElementById('savePct');
+  const fill  = document.getElementById('saveFill');
+  const note  = document.getElementById('saveNote');
+  if (s.income <= 0){
+    pctEl.textContent = '—';
+    fill.style.width = '0%';
+    note.textContent = s.expense>0 ? 'Έξοδα χωρίς έσοδα αυτόν τον μήνα.' : 'Προσθέστε συναλλαγές για να δείτε το ποσοστό αποταμίευσης.';
+    return;
+  }
+  const rate = Math.max(-100, Math.min(100, s.savingsRate));
+  pctEl.textContent = Math.round(rate)+'%';
+  fill.style.width = Math.max(0, rate)+'%';
+  fill.className = 'savebar-fill'+(rate<10?' bad':rate<25?' warn':'');
+  if (rate>=40)      note.textContent = '🌟 Εξαιρετική αποταμίευση! Κρατάτε '+Math.round(rate)+'% των εσόδων σας.';
+  else if (rate>=25) note.textContent = '👍 Καλή δουλειά — αποταμιεύετε '+Math.round(rate)+'% αυτόν τον μήνα.';
+  else if (rate>=10) note.textContent = '🙂 Αποταμιεύετε '+Math.round(rate)+'%. Υπάρχει περιθώριο βελτίωσης.';
+  else if (rate>=0)  note.textContent = '⚠️ Χαμηλή αποταμίευση ('+Math.round(rate)+'%). Προσοχή στα έξοδα.';
+  else               note.textContent = '🚨 Ξοδεύετε περισσότερα από όσα κερδίζετε αυτόν τον μήνα.';
+}
+
+function renderInsights(s, prev){
+  const box = document.getElementById('insights');
+  if (s.count === 0){
+    box.innerHTML = `<div class="empty" style="padding:24px 10px">
+      <div class="e-ico">📭</div><p>Καμία συναλλαγή αυτόν τον μήνα</p>
+      <small>Ξεκινήστε φρέσκα — προσθέστε την πρώτη σας συναλλαγή!</small></div>`;
+    return;
+  }
+  const items = [];
+
+  // top expense category
+  const catEntries = Object.entries(s.byCat).sort((a,b)=>b[1]-a[1]);
+  if (catEntries.length){
+    const [c,v] = catEntries[0];
+    items.push({ico:ICONS[c]||'📦', lbl:'Μεγαλύτερη κατηγορία εξόδων', val:`${c} <small>· ${fmt(v)}</small>`});
+  }
+
+  // biggest single transaction
+  if (s.biggest){
+    items.push({ico:'💥', lbl:'Μεγαλύτερη συναλλαγή',
+      val:`${s.biggest.category} <small>· ${s.biggest.type==='income'?'+':'-'}${fmt(s.biggest.amount)}</small>`});
+  }
+
+  // daily average expense
+  const {y,m}=keyToParts(s.key);
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const today = new Date();
+  const isCurrent = s.key === CURRENT_KEY;
+  const daysElapsed = isCurrent ? today.getDate() : daysInMonth;
+  const avg = s.expense / Math.max(1, daysElapsed);
+  items.push({ico:'📅', lbl:'Μέσος όρος εξόδων / ημέρα', val:`${fmt(avg)}`});
+
+  // projection for current month
+  if (isCurrent && s.expense>0 && daysElapsed < daysInMonth){
+    const proj = avg * daysInMonth;
+    items.push({ico:'🔮', lbl:'Προβλεπόμενα έξοδα μήνα', val:`${fmt(proj)} <small>· με τον τρέχοντα ρυθμό</small>`});
+  }
+
+  // transactions count
+  items.push({ico:'🧾', lbl:'Σύνολο συναλλαγών', val:`${s.count}`});
+
+  box.innerHTML = items.map(it=>`
+    <div class="ins">
+      <div class="ins-ico">${it.ico}</div>
+      <div class="ins-txt"><div class="ins-lbl">${it.lbl}</div><div class="ins-val">${it.val}</div></div>
+    </div>`).join('');
+}
+
+function renderCats(s){
+  const card = document.getElementById('catCard');
+  const box  = document.getElementById('catList');
+  const entries = Object.entries(s.byCat).sort((a,b)=>b[1]-a[1]);
+  if (!entries.length){ card.style.display='none'; return; }
+  card.style.display='block';
+  const max = entries[0][1];
+  const palette = ['#ef4444','#f97316','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#10b981','#64748b'];
+  box.innerHTML = entries.map(([c,v],i)=>{
+    const pct = Math.round(v/s.expense*100);
+    const w   = Math.max(4, v/max*100);
+    const col = palette[i % palette.length];
+    return `<div class="catbar">
+      <div class="catbar-top">
+        <span class="catbar-name">${ICONS[c]||'📦'} ${c} <span style="color:var(--faint);font-weight:600">${pct}%</span></span>
+        <span class="catbar-amt">${fmt(v)}</span>
+      </div>
+      <div class="catbar-track"><div class="catbar-fill" style="width:${w}%;background:${col}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderHistory(){
+  const months = monthsWithData();
+  const box = document.getElementById('histList');
+  document.getElementById('histCount').textContent = months.length;
+  if (!months.length){
+    box.innerHTML = `<div class="empty"><div class="e-ico">🗓️</div><p>Κανένα ιστορικό ακόμη</p>
+      <small>Κάθε μήνας θα εμφανίζεται εδώ αυτόματα.</small></div>`;
+    return;
+  }
+  box.innerHTML = months.map(key=>{
+    const st = statsFor(key);
+    const {y,m}=keyToParts(key);
+    const active = key===viewKey ? ' active':'';
+    const netCls = st.net>=0?'pos':'neg';
+    return `<div class="hist-item${active}" onclick="gotoMonth('${key}')">
+      <div class="hist-mo"><span class="m">${MONTHS_GR_SHORT[m]}</span><span class="y">${y}</span></div>
+      <div class="hist-info">
+        <div class="hist-net ${netCls}">${st.net>=0?'+':''}${fmt(st.net)}</div>
+        <div class="hist-sub">
+          <span class="i">▲ ${fmt(st.income)}</span>
+          <span class="e">▼ ${fmt(st.expense)}</span>
+          <span>· ${st.count} συν.</span>
+        </div>
+      </div>
+      <span class="hist-chev">›</span>
+    </div>`;
+  }).join('');
+}
+
+function renderTxns(s){
+  const list = scope==='all' ? txns : s.list;
+  document.getElementById('txnCount').textContent = list.length;
+  const el = document.getElementById('txnList');
+  if (list.length === 0){
+    el.innerHTML = scope==='all'
+      ? `<div class="empty"><div class="e-ico">💸</div><p>Δεν υπάρχουν συναλλαγές</p>
+         <small>Προσθέστε την πρώτη σας συναλλαγή παραπάνω!</small></div>`
+      : `<div class="empty"><div class="e-ico">🌱</div><p>Καθαρή αρχή για ${monthLabel(viewKey)}</p>
+         <small>Δεν υπάρχουν συναλλαγές αυτόν τον μήνα ακόμη.</small></div>`;
+    return;
+  }
+  el.innerHTML = list.map(t=>`
+    <div class="ti">
+      <div class="ti-ico ${t.type}">${ICONS[t.category]||'📦'}</div>
+      <div class="ti-info">
+        <div class="ti-cat">${t.category}</div>
+        <div class="ti-desc">${escapeHtml(t.description)||'—'}</div>
+      </div>
+      <div class="ti-right">
+        <div class="ti-amt ${t.type}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
+        <div class="ti-date">${fmtDate(t.date)}</div>
+      </div>
+      <button class="delbtn" onclick="del(${t.id})" title="Διαγραφή">✕</button>
+    </div>`).join('');
+}
+
+function escapeHtml(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// ── Animated money counter ────────────────────────────────────────────────────
+function animateMoney(el, end){
+  const start = el._cur || 0;
+  el._cur = end;                                  // record target immediately
+  cancelAnimationFrame(el._raf);
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce || Math.abs(end-start) < 0.005){ el.textContent = fmt(end); return; }
+  const dur = 500, t0 = performance.now();
+  function step(now){
+    const p = Math.min(1, (now-t0)/dur);
+    const e = 1 - Math.pow(1-p, 3);
+    el.textContent = fmt(start + (end-start)*e);
+    if (p<1) el._raf = requestAnimationFrame(step);
+    else el.textContent = fmt(end);
+  }
+  el.textContent = fmt(end);                       // guarantee correct value even if rAF is throttled
+  el._raf = requestAnimationFrame(step);
+}
+
+// ── Confetti ──────────────────────────────────────────────────────────────────
+function confetti(){
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const emojis = ['🎉','💸','✨','💰','🤑','🌟'];
+  for (let i=0;i<16;i++){
+    const e = document.createElement('div');
+    e.className='confetti';
+    e.textContent = emojis[i % emojis.length];
+    e.style.left = Math.random()*100+'vw';
+    e.style.fontSize = (0.8+Math.random()*0.9)+'rem';
+    const dur = 1.6+Math.random()*1.1;
+    e.style.animation = `fall ${dur}s cubic-bezier(.3,.5,.5,1) forwards`;
+    e.style.animationDelay = (Math.random()*0.25)+'s';
+    document.body.appendChild(e);
+    setTimeout(()=>e.remove(), (dur+0.5)*1000);
+  }
+}
+
+// ── Chart (last 6 months, highlights selected) ────────────────────────────────
 function drawChart() {
   const canvas = document.getElementById('chart');
   const ctx    = canvas.getContext('2d');
   const dpr    = window.devicePixelRatio || 1;
-  const W      = canvas.parentElement.clientWidth - 44;
+  const W      = canvas.parentElement.clientWidth - 40;
   const H      = 210;
 
   canvas.width  = W * dpr; canvas.height = H * dpr;
   canvas.style.width  = W+'px'; canvas.style.height = H+'px';
-  ctx.scale(dpr, dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.clearRect(0, 0, W, H);
 
+  const dark = document.documentElement.getAttribute('data-theme')==='dark';
+  const gridCol = dark ? '#243049' : '#e2e8f0';
+  const axisCol = dark ? '#334155' : '#e2e8f0';
+  const labCol  = dark ? '#94a3b8' : '#64748b';
+
+  // build 6 months ending at viewKey
   const months = [];
-  const now = new Date();
-  for (let i=5; i>=0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-    months.push({ key:d.toISOString().slice(0,7),
-      label:d.toLocaleDateString('el-GR',{month:'short'}), income:0, expense:0 });
+  for (let i=5;i>=0;i--){
+    const key = ymShift(viewKey, -i);
+    const {m} = keyToParts(key);
+    const st  = statsFor(key);
+    months.push({ key, label:MONTHS_GR_SHORT[m], income:st.income, expense:st.expense });
   }
-  txns.forEach(t => {
-    const m = months.find(m=>m.key===t.date.slice(0,7));
-    if (m) t.type==='income' ? (m.income+=t.amount) : (m.expense+=t.amount);
-  });
 
   const maxVal = Math.max(...months.flatMap(m=>[m.income,m.expense]),1);
-  const pL=52,pR=12,pT=14,pB=32;
+  const pL=50,pR=12,pT=14,pB=32;
   const cW=W-pL-pR, cH=H-pT-pB;
 
   ctx.font='11px -apple-system,sans-serif'; ctx.textAlign='right';
-  for (let i=0; i<=4; i++) {
+  for (let i=0;i<=4;i++){
     const y=pT+cH-(i/4)*cH, val=maxVal*i/4;
-    ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1;
+    ctx.strokeStyle=gridCol; ctx.lineWidth=1;
     ctx.beginPath(); ctx.moveTo(pL,y); ctx.lineTo(W-pR,y); ctx.stroke();
-    ctx.fillStyle='#94a3b8';
+    ctx.fillStyle=labCol;
     ctx.fillText(val>=1000?(val/1000).toFixed(1)+'k':Math.round(val)+'€', pL-5, y+4);
   }
 
   const gW=cW/months.length, bW=Math.min(Math.floor(gW*.28),22), gap=Math.max(bW*.35,4);
 
-  function rRect(x,y,w,h,rad) {
-    rad=Math.min(rad,h/2,w/2);
+  function rRect(x,y,w,h,rad){
+    if (w<=0 || h<=0) return;
+    rad=Math.max(0, Math.min(rad,h/2,w/2));
     ctx.beginPath();
     ctx.moveTo(x+rad,y); ctx.lineTo(x+w-rad,y);
     ctx.arcTo(x+w,y,x+w,y+rad,rad); ctx.lineTo(x+w,y+h);
@@ -509,19 +958,22 @@ function drawChart() {
     ctx.arcTo(x,y,x+rad,y,rad); ctx.closePath(); ctx.fill();
   }
 
-  months.forEach((m,i) => {
+  months.forEach((m,i)=>{
     const cx = pL+i*gW+gW/2;
-    if (m.income>0)  { const bh=Math.max((m.income/maxVal)*cH,3);  ctx.fillStyle='#10b981'; rRect(cx-gap/2-bW,pT+cH-bh,bW,bh,4); }
-    if (m.expense>0) { const bh=Math.max((m.expense/maxVal)*cH,3); ctx.fillStyle='#ef4444'; rRect(cx+gap/2,pT+cH-bh,bW,bh,4); }
-    ctx.fillStyle='#64748b'; ctx.textAlign='center'; ctx.font='11px -apple-system,sans-serif';
+    const sel = m.key===viewKey;
+    if (m.income>0){ const bh=Math.max((m.income/maxVal)*cH,3); ctx.globalAlpha=sel?1:.55; ctx.fillStyle='#10b981'; rRect(cx-gap/2-bW,pT+cH-bh,bW,bh,4); }
+    if (m.expense>0){ const bh=Math.max((m.expense/maxVal)*cH,3); ctx.globalAlpha=sel?1:.55; ctx.fillStyle='#ef4444'; rRect(cx+gap/2,pT+cH-bh,bW,bh,4); }
+    ctx.globalAlpha=1;
+    ctx.fillStyle=sel?(dark?'#e8eef7':'#0f172a'):labCol;
+    ctx.font=(sel?'bold ':'')+'11px -apple-system,sans-serif'; ctx.textAlign='center';
     ctx.fillText(m.label, cx, H-pB+16);
   });
 
-  ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1.5;
+  ctx.strokeStyle=axisCol; ctx.lineWidth=1.5;
   ctx.beginPath(); ctx.moveTo(pL,pT+cH); ctx.lineTo(W-pR,pT+cH); ctx.stroke();
 
   document.getElementById('chartNote').textContent =
-    months.some(m=>m.income>0||m.expense>0) ? '' : 'Δεν υπάρχουν δεδομένα για τους τελευταίους 6 μήνες';
+    months.some(m=>m.income>0||m.expense>0) ? 'Επιλεγμένος μήνας με έντονο χρώμα' : 'Δεν υπάρχουν δεδομένα για αυτό το διάστημα';
 }
 
 // ── Sync panel toggle ─────────────────────────────────────────────────────────
@@ -533,14 +985,37 @@ function toggleSync() {
   chevron.className  = 'sync-chevron' + (open ? '' : ' open');
 }
 
+// ── Auto-sync ─────────────────────────────────────────────────────────────────
+function toggleAutoSync(){
+  autoSync = document.getElementById('autoSyncToggle').checked;
+  localStorage.setItem('fin_autoSync', autoSync ? '1':'0');
+  if (autoSync){
+    if (!getScriptUrl()){
+      toast('⚠️ Προσθέστε πρώτα το URL του Apps Script');
+      document.getElementById('autoSyncToggle').checked = false;
+      autoSync = false; localStorage.setItem('fin_autoSync','0');
+      return;
+    }
+    toast('⚡ Αυτόματη αποθήκευση στα Sheets ενεργή');
+    scheduleAutoSync();
+  } else {
+    toast('Αυτόματη αποθήκευση απενεργοποιήθηκε');
+  }
+}
+
+let _autoTimer = null;
+function scheduleAutoSync(){
+  if (!autoSync || !getScriptUrl()) return;
+  clearTimeout(_autoTimer);
+  _autoTimer = setTimeout(()=>exportToSheets(true), 1800);   // debounce
+}
+
 // ── Sync helpers ──────────────────────────────────────────────────────────────
 function getScriptUrl() { return localStorage.getItem('fin_scriptUrl') || ''; }
 
 function saveUrl() {
   const url = document.getElementById('scriptUrl').value.trim();
-  if (!url.startsWith('https://script.google.com')) {
-    toast('⚠️ Εισάγετε έγκυρο URL Apps Script'); return;
-  }
+  if (!url.startsWith('https://script.google.com')) { toast('⚠️ Εισάγετε έγκυρο URL Apps Script'); return; }
   localStorage.setItem('fin_scriptUrl', url);
   toast('✅ URL αποθηκεύτηκε');
   setSyncStatus('');
@@ -551,27 +1026,21 @@ function setSyncStatus(type, msg) {
   el.className = 'sync-status' + (msg ? ' show '+type : '');
   el.textContent = msg || '';
 }
-
 function setSyncBusy(busy) {
   document.getElementById('btnExport').disabled = busy;
   document.getElementById('btnImport').disabled = busy;
 }
-
 function saveSyncTime() {
   const s = new Date().toLocaleString('el-GR');
   localStorage.setItem('fin_lastSync', s);
   document.getElementById('syncTime').textContent = '🕐 Τελευταίος συγχρονισμός: '+s;
 }
-
 function loadSyncTime() {
   const s = localStorage.getItem('fin_lastSync');
   if (s) document.getElementById('syncTime').textContent = '🕐 Τελευταίος συγχρονισμός: '+s;
 }
 
 // ── Fetch helper ──────────────────────────────────────────────────────────────
-// POST uses Content-Type: text/plain to avoid a CORS preflight OPTIONS request,
-// which Google Apps Script Web Apps do not handle. The script reads the body
-// via e.postData.contents and parses it as JSON.
 async function callScript(url, data, method) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 25000);
@@ -579,12 +1048,8 @@ async function callScript(url, data, method) {
     let res;
     if (method === 'POST') {
       res = await fetch(url, {
-        method:   'POST',
-        headers:  { 'Content-Type': 'text/plain;charset=utf-8' },
-        body:     JSON.stringify(data),
-        redirect: 'follow',
-        signal:   controller.signal
-      });
+        method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+        body:JSON.stringify(data), redirect:'follow', signal:controller.signal });
     } else {
       const qs = new URLSearchParams(data).toString();
       res = await fetch(url + (qs ? '?' + qs : ''), { signal: controller.signal });
@@ -592,17 +1057,15 @@ async function callScript(url, data, method) {
     if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + res.statusText);
     const text = await res.text();
     try { return JSON.parse(text); }
-    catch (_) { throw new Error('Invalid response from Apps Script — check the URL'); }
+    catch (_) { throw new Error('Μη έγκυρη απόκριση από το Apps Script — ελέγξτε το URL'); }
   } catch (e) {
-    if (e.name === 'AbortError') throw new Error('Timeout — Apps Script took too long to respond');
+    if (e.name === 'AbortError') throw new Error('Λήξη χρόνου — το Apps Script άργησε να απαντήσει');
     throw e;
-  } finally {
-    clearTimeout(timer);
-  }
+  } finally { clearTimeout(timer); }
 }
 
 // ── Export to Google Sheets ───────────────────────────────────────────────────
-async function exportToSheets() {
+async function exportToSheets(silent) {
   const url = getScriptUrl();
   if (!url) {
     if (document.getElementById('syncBody').style.display === 'none') toggleSync();
@@ -610,20 +1073,17 @@ async function exportToSheets() {
     return;
   }
   setSyncBusy(true);
-  setSyncStatus('loading', '⏳ Αποστολή δεδομένων στο Google Sheets…');
-
+  setSyncStatus('loading', silent ? '⚡ Αυτόματη αποθήκευση στα Sheets…' : '⏳ Αποστολή δεδομένων στο Google Sheets…');
   try {
     const result = await callScript(url, { action: 'export', transactions: txns }, 'POST');
     if (!result.success) throw new Error(result.error || 'Server error');
-
     saveSyncTime();
-    setSyncStatus('ok', '✅ Εξαγωγή ολοκληρώθηκε — ' + txns.length + ' συναλλαγές αποθηκεύτηκαν');
-    toast('✅ Δεδομένα εξάχθηκαν στο Google Sheets!');
+    setSyncStatus('ok', '✅ Αποθηκεύτηκε στα Sheets — ' + txns.length + ' συναλλαγές');
+    if (!silent) toast('✅ Δεδομένα εξάχθηκαν στο Google Sheets!');
   } catch (e) {
     setSyncStatus('err', '❌ ' + e.message);
-  } finally {
-    setSyncBusy(false);
-  }
+    if (silent) toast('⚠️ Αποτυχία αυτόματης αποθήκευσης στα Sheets');
+  } finally { setSyncBusy(false); }
 }
 
 // ── Import from Google Sheets ─────────────────────────────────────────────────
@@ -636,27 +1096,23 @@ async function importFromSheets() {
   }
   setSyncBusy(true);
   setSyncStatus('loading', '⏳ Λήψη δεδομένων από το Google Sheets…');
-
   try {
     const data = await callScript(url, { action: 'import' }, 'GET');
     if (!data.success) throw new Error(data.error || 'Server error');
-
     const n = data.transactions.length;
     if (!confirm('Εισαγωγή ' + n + ' συναλλαγ' + (n === 1 ? 'ής' : 'ών') +
         ' από το Google Sheets;\n\nΑυτό θα αντικαταστήσει τα τοπικά δεδομένα.')) {
       setSyncStatus(''); setSyncBusy(false); return;
     }
-
     txns = data.transactions.sort((a, b) => b.id - a.id);
-    save(); render();
+    localStorage.setItem('fin_v2', JSON.stringify(txns));   // persist without re-triggering auto-sync
+    render();
     saveSyncTime();
     setSyncStatus('ok', '✅ Εισαγωγή ολοκληρώθηκε — ' + n + ' συναλλαγές φορτώθηκαν');
     toast('✅ ' + n + ' συναλλαγές εισήχθησαν από το Sheets!');
   } catch (e) {
     setSyncStatus('err', '❌ ' + e.message);
-  } finally {
-    setSyncBusy(false);
-  }
+  } finally { setSyncBusy(false); }
 }
 </script>
 </body>
